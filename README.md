@@ -26,6 +26,7 @@ dados/            Dados reais exportados via Windsor.ai (Meta Ads e Google Ads) 
 | `03-google-ads.md` | Google Ads: campanhas, grupos de anúncio, termos de pesquisa reais, RSAs. Inclui adendo de correção |
 | `07-seo-scope.md` | SEO técnico e de conteúdo do site institucional |
 | `08-cro-site.md` | CRO do site institucional: inventário de pontos de conversão, scoring, oportunidades |
+| `09-diagnostico-performance-ads.md` | Diagnóstico de performance de mídia paga consolidado (Meta + Google), com consulta ao vivo ao Windsor.ai em 25/09: Meta ativo e saudável (CPL R$ 28,22), Google Ads sem qualquer atividade registrada desde 09/09, plano de ação priorizado e projeção de impacto financeiro |
 
 ### `dados/` — dado real de performance (Windsor.ai)
 
@@ -45,7 +46,7 @@ dados/            Dados reais exportados via Windsor.ai (Meta Ads e Google Ads) 
 
 ## Achados mais críticos
 
-1. **Google Ads não registra conversão desde 15/07/2026** (72 dias, quatro estruturas de campanha diferentes), mesmo com a conta ativa e gastando normalmente. Hipótese mais provável: falha de rastreamento — o formulário da landing page (`lp.pointthermic.com.br`) é `method="get"` sem página de obrigado visível, e o site roda três contêineres GTM distintos.
+1. **Google Ads não registra conversão desde 15/07/2026** (72 dias, quatro estruturas de campanha diferentes), e uma consulta ao vivo em 25/09 (módulo 09) mostra que a conta está **sem qualquer gasto, impressão ou clique registrado desde 09/09/2026** (16 dias) — não é mais só falta de conversão, é ausência total de atividade recente. Hipótese mais provável para a falha de rastreamento: o formulário da landing page (`lp.pointthermic.com.br`) é `method="get"` sem página de obrigado visível, e o site roda três contêineres GTM distintos. Já foram gastos R$ 2.092,33 sem nenhuma conversão desde que o problema começou. Em contraste, o Meta Ads segue ativo e saudável, gerando leads todos os dias de setembro a CPL de R$ 28,22.
 2. **SEO técnico do site institucional**: zero meta description, H1 incorreto ("Contato") em 100% das páginas, URLs antigas indexadas retornando 404, blog publicado e vazio desde 2023.
 3. **CRO**: o selo de fornecedor cadastrado Petrobras (CRC) e a certificação ISO 9001 — o maior ativo de credibilidade da empresa — aparecem só como PDF cru numa página interna, não como selo de confiança na home nem nos anúncios do Meta.
 4. **Concorrência**: Filtrovali é a mais madura digitalmente (mídia paga ativa nos dois canais, SEO técnico correto, mote criativo consistente entre site e anúncio). ITP Brasil tem portfólio quase idêntico ao da Point Thermic e o mesmo cadastro Petrobras/ONIP, mas converte pouco disso em resultado digital (site datado, sem CTA na home).
