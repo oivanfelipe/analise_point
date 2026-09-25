@@ -27,6 +27,7 @@ dados/            Dados reais exportados via Windsor.ai (Meta Ads e Google Ads) 
 | `07-seo-scope.md` | SEO técnico e de conteúdo do site institucional |
 | `08-cro-site.md` | CRO do site institucional: inventário de pontos de conversão, scoring, oportunidades |
 | `09-diagnostico-performance-ads.md` | Diagnóstico de performance de mídia paga consolidado (Meta + Google), com consulta ao vivo ao Windsor.ai em 25/09: Meta ativo e saudável (CPL R$ 28,22), Google Ads sem qualquer atividade registrada desde 09/09, plano de ação priorizado e projeção de impacto financeiro |
+| `10-projecao-mercado.md` | Projeção de mercado (metodologia Doutor Carvalho, módulo 09): benchmark ao vivo por canal e por etapa do funil comercial, dois cenários (mínimo viável e potencial de mercado), receita projetada entre R$ 20 mil e R$ 560 mil/mês, com validação de capacidade comercial e ciclo de venda |
 
 ### `dados/` — dado real de performance (Windsor.ai)
 
