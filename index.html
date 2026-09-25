@@ -1,0 +1,1050 @@
+<title>Point Thermic — Diagnóstico de Growth</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#F2EFE8; --surface:#FFFFFF; --surface-2:#EAE5DA; --surface-3:#DEDACC;
+    --border:#D3CDBE; --ink:#201D17; --ink-2:#5B564A; --ink-muted:#8C8676;
+    --accent:#B4511F; --accent-tint:#F5E5DA; --accent-ink:#FFFFFF;
+    --meta:#0089AE; --meta-tint:#E1F1F5;
+    --google:#B4511F; --google-tint:#F5E5DA;
+    --good:#1F8A44; --good-tint:#E3F2E7;
+    --warning:#9C7A12; --warning-tint:#F5EDDA;
+    --shadow:rgba(32,29,23,0.10);
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#171511; --surface:#201D18; --surface-2:#2A2620; --surface-3:#332E26;
+      --border:#433C31; --ink:#F1EDE4; --ink-2:#C9C2B3; --ink-muted:#948C7A;
+      --accent:#CC7638; --accent-tint:#3B2418; --accent-ink:#171511;
+      --meta:#2B9AC0; --meta-tint:#16323B;
+      --google:#CC7638; --google-tint:#3B2418;
+      --good:#4CBB5C; --good-tint:#16321E;
+      --warning:#D9A63A; --warning-tint:#362C13;
+      --shadow:rgba(0,0,0,0.35);
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#171511; --surface:#201D18; --surface-2:#2A2620; --surface-3:#332E26;
+    --border:#433C31; --ink:#F1EDE4; --ink-2:#C9C2B3; --ink-muted:#948C7A;
+    --accent:#CC7638; --accent-tint:#3B2418; --accent-ink:#171511;
+    --meta:#2B9AC0; --meta-tint:#16323B;
+    --google:#CC7638; --google-tint:#3B2418;
+    --good:#4CBB5C; --good-tint:#16321E;
+    --warning:#D9A63A; --warning-tint:#362C13;
+    --shadow:rgba(0,0,0,0.35);
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;
+    padding-inline:16px; padding-block:28px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:36px;}
+
+  .eyebrow{
+    font-family:'Oswald',sans-serif; font-weight:600; font-size:11.5px;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--accent);
+  }
+  h1,h2,h3{font-family:'Oswald',sans-serif; text-wrap:balance; margin:0; color:var(--ink);}
+  h1{font-size:clamp(26px,5vw,38px); font-weight:700; line-height:1.1; letter-spacing:-.01em;}
+  h2{font-size:20px; font-weight:600; letter-spacing:-.005em;}
+  h3{font-size:14.5px; font-weight:600;}
+  p{margin:0; line-height:1.65; color:var(--ink-2);}
+  .num{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums;}
+
+  a{color:var(--meta);}
+
+  /* ---------- Masthead ---------- */
+  .masthead{
+    display:flex; flex-wrap:wrap; gap:24px; align-items:flex-end; justify-content:space-between;
+    padding-bottom:22px; border-bottom:2px solid var(--ink);
+  }
+  .masthead-text{display:flex;flex-direction:column;gap:10px;max-width:600px;}
+  .masthead-sub{font-size:14px;color:var(--ink-muted);}
+  .score-badge{
+    display:flex; align-items:center; gap:14px; padding:10px 18px;
+    border:1.5px solid var(--border); border-radius:4px; background:var(--surface);
+    box-shadow:0 2px 8px var(--shadow); flex-shrink:0;
+  }
+  .score-badge .num{font-size:34px;font-weight:600;line-height:1;color:var(--accent);}
+  .score-badge .lbl{font-size:11px;color:var(--ink-muted);line-height:1.35;max-width:96px;text-transform:uppercase;letter-spacing:.04em;}
+
+  /* ---------- Stat tiles ---------- */
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:6px; overflow:hidden;}
+  @media (max-width:720px){.stat-row{grid-template-columns:repeat(2,1fr);}}
+  .stat{background:var(--surface); padding:18px 16px; display:flex; flex-direction:column; gap:6px;}
+  .stat .num{font-size:27px;font-weight:600;line-height:1.05;}
+  .stat .lbl{font-size:12.5px;color:var(--ink-2);line-height:1.4;}
+  .stat.crit .num{color:var(--google);}
+  .stat.good .num{color:var(--good);}
+
+  /* ---------- Channel cards ---------- */
+  .channels{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:640px){.channels{grid-template-columns:1fr;}}
+  .channel-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    padding:20px; display:flex; flex-direction:column; gap:14px; border-top:4px solid var(--ink);
+  }
+  .channel-card.meta{border-top-color:var(--meta);}
+  .channel-card.google{border-top-color:var(--google);}
+  .channel-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .channel-name{display:flex;align-items:center;gap:9px;}
+  .dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+  .dot.meta{background:var(--meta);}
+  .dot.google{background:var(--google);}
+  .pill{
+    font-family:'Oswald',sans-serif; font-size:11px; font-weight:600; text-transform:uppercase;
+    letter-spacing:.05em; padding:4px 10px; border-radius:99px; white-space:nowrap;
+  }
+  .pill.good{background:var(--good-tint); color:var(--good);}
+  .pill.crit{background:var(--google-tint); color:var(--google);}
+  .pill.warn{background:var(--warning-tint); color:var(--warning);}
+  .channel-metrics{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .metric .num{font-size:19px;font-weight:600;}
+  .metric .lbl{font-size:11.5px;color:var(--ink-muted);}
+  .channel-card p{font-size:13.5px;}
+
+  /* ---------- Chart card ---------- */
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:22px;}
+  .card-head{display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:6px;}
+  .card-head p{font-size:13px;}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:10px;}
+  .legend-item{display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink-2);}
+  .legend-swatch{width:14px;height:3px;border-radius:2px;}
+
+  .chart-wrap{position:relative;}
+  svg text{font-family:'IBM Plex Mono',monospace;}
+  .axis-label{fill:var(--ink-muted); font-size:10px;}
+  .gridline{stroke:var(--border); stroke-width:1;}
+  .tooltip{
+    position:absolute; pointer-events:none; background:var(--ink); color:var(--bg);
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:8px 10px; border-radius:5px;
+    line-height:1.5; box-shadow:0 4px 14px var(--shadow); opacity:0; transition:opacity .1s;
+    white-space:nowrap; z-index:5;
+  }
+  :root[data-theme="dark"] .tooltip, @media (prefers-color-scheme:dark){.tooltip{background:var(--surface-3);color:var(--ink);}}
+
+  /* ---------- Table ---------- */
+  .table-scroll{overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:13.5px; min-width:520px;}
+  th{
+    font-family:'Oswald',sans-serif; font-weight:600; font-size:11px; text-transform:uppercase;
+    letter-spacing:.04em; color:var(--ink-muted); text-align:left; padding:8px 12px;
+    border-bottom:1.5px solid var(--ink);
+  }
+  td{padding:10px 12px; border-bottom:1px solid var(--border); color:var(--ink-2); vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  td.num, th.num{text-align:right; font-family:'IBM Plex Mono',monospace;}
+  td.zero{color:var(--google); font-weight:600;}
+  .row-flag{background:var(--google-tint);}
+
+  /* ---------- Root cause ---------- */
+  .cause-list{display:flex; flex-direction:column; gap:14px;}
+  .cause{display:flex; gap:14px;}
+  .cause-num{
+    font-family:'Oswald',sans-serif; font-weight:700; font-size:17px; color:var(--accent);
+    width:30px; flex-shrink:0;
+  }
+  .cause-body p{font-size:13.5px;}
+  .cause-body h3{margin-bottom:3px;}
+
+  /* ---------- Action plan ---------- */
+  .prio{
+    font-family:'Oswald',sans-serif; font-size:10.5px; font-weight:600; text-transform:uppercase;
+    letter-spacing:.04em; padding:3px 9px; border-radius:99px; display:inline-block; white-space:nowrap;
+  }
+  .prio.p-crit{background:var(--google-tint); color:var(--google);}
+  .prio.p-high{background:var(--warning-tint); color:var(--warning);}
+  .prio.p-med{background:var(--surface-3); color:var(--ink-2);}
+
+  /* ---------- Competitors ---------- */
+  .comp-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media (max-width:820px){.comp-grid{grid-template-columns:1fr;}}
+  .comp-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    padding:18px; display:flex; flex-direction:column; gap:12px; border-top:4px solid var(--ink-muted);
+  }
+  .comp-head{display:flex; flex-direction:column; gap:8px;}
+  .comp-head .prio{align-self:flex-start;}
+  .comp-sub{font-size:12.5px; color:var(--ink-muted); line-height:1.45;}
+  .comp-fact{display:flex; flex-direction:column; gap:2px;}
+  .comp-fact .k{font-family:'Oswald',sans-serif; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted);}
+  .comp-fact .v{font-size:13px; color:var(--ink-2); line-height:1.5;}
+  .callout{
+    background:var(--warning-tint); border:1px solid var(--warning); border-left-width:4px;
+    border-radius:6px; padding:16px 18px; display:flex; flex-direction:column; gap:6px;
+  }
+  .callout .eyebrow{color:var(--warning);}
+  .callout p{color:var(--ink-2); font-size:13.5px;}
+  .opp-list{display:flex; flex-direction:column; gap:10px;}
+  .opp{display:flex; gap:12px; align-items:flex-start;}
+  .opp-num{
+    font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13px; color:var(--good);
+    background:var(--good-tint); width:24px; height:24px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .opp p{font-size:13.5px;}
+
+  /* ---------- Funnel scenarios ---------- */
+  .funnel-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:720px){.funnel-grid{grid-template-columns:1fr;}}
+  .funnel-card{background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:20px; display:flex; flex-direction:column; gap:14px;}
+  .funnel-card.min{border-top:4px solid var(--warning);}
+  .funnel-card.max{border-top:4px solid var(--good);}
+  .funnel-top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .funnel-invest{font-size:20px; font-weight:600;}
+  .funnel-invest .unit{font-size:11.5px; color:var(--ink-muted); font-weight:400; text-transform:uppercase; letter-spacing:.04em; display:block;}
+  .funnel-rows{display:flex; flex-direction:column; gap:7px;}
+  .funnel-row{display:grid; grid-template-columns:76px 1fr 52px; align-items:center; gap:8px;}
+  .funnel-row .stage{font-size:11.5px; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.03em;}
+  .funnel-track{height:22px; background:var(--surface-2); border-radius:4px; overflow:hidden;}
+  .funnel-bar{height:100%; border-radius:4px; min-width:3px;}
+  .funnel-card.min .funnel-bar{background:var(--warning);}
+  .funnel-card.max .funnel-bar{background:var(--good);}
+  .funnel-row .val{font-size:12.5px; text-align:right; font-weight:600;}
+  .funnel-result{border-top:1px dashed var(--border); padding-top:12px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+  .funnel-result .metric .num{font-size:17px;}
+
+  /* ---------- Keywords ---------- */
+  .kw-card{display:flex; flex-direction:column; gap:10px;}
+  .kw-head{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+  .kw-chips{display:flex; flex-wrap:wrap; gap:7px;}
+  .kw-chip{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; padding:5px 11px; border-radius:6px;
+    background:var(--surface-2); color:var(--ink-2); border:1px solid var(--border); white-space:nowrap;
+  }
+  .kw-chip.core{background:var(--good-tint); color:var(--good); border-color:transparent;}
+  .kw-chip.opp{background:var(--surface); color:var(--ink-2); border:1px dashed var(--ink-muted);}
+  .kw-chip.rival{background:var(--meta-tint); color:var(--meta); border-color:transparent;}
+  .kw-chip.neg{background:var(--google-tint); color:var(--google); border-color:transparent; text-decoration:line-through; text-decoration-thickness:1.5px;}
+  .kw-note{font-size:12.5px; color:var(--ink-muted); line-height:1.55;}
+
+  /* ---------- Context / market ---------- */
+  .ctx-card{display:flex; flex-direction:column; gap:14px;}
+  .ctx-fact-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:640px){.ctx-fact-grid{grid-template-columns:1fr;}}
+  .ctx-fact .k{font-family:'Oswald',sans-serif; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted); margin-bottom:6px;}
+  .ctx-fact .v{font-size:13.5px; color:var(--ink-2); line-height:1.5;}
+  .maturity-mini{display:flex; align-items:center; gap:16px; background:var(--surface-2); border-radius:8px; padding:16px 18px;}
+  .maturity-mini .num{font-family:'Oswald',sans-serif; font-size:30px; font-weight:700; color:var(--warning); line-height:1;}
+  .maturity-mini .txt{font-size:12.5px; color:var(--ink-2); line-height:1.5;}
+  .maturity-bar{flex:1; min-width:80px; height:8px; background:var(--surface-3); border-radius:99px; overflow:hidden;}
+  .maturity-bar span{display:block; height:100%; background:var(--warning); border-radius:99px;}
+
+  /* ---------- Projection ---------- */
+  .proj-row{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media (max-width:640px){.proj-row{grid-template-columns:1fr;}}
+  .proj-tile{background:var(--surface-2); border-radius:8px; padding:18px; display:flex; flex-direction:column; gap:6px;}
+  .proj-tile .num{font-size:24px; font-weight:600; color:var(--ink);}
+  .proj-tile .lbl{font-size:12.5px; color:var(--ink-2); line-height:1.45;}
+  .proj-tag{font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-muted);}
+
+  footer{
+    border-top:1px solid var(--border); padding-top:18px; display:flex; flex-direction:column; gap:6px;
+  }
+  footer p{font-size:12px; color:var(--ink-muted); line-height:1.6;}
+
+  section{display:flex; flex-direction:column; gap:16px;}
+  .section-head{display:flex; flex-direction:column; gap:4px;}
+</style>
+
+<div class="page">
+
+  <div class="masthead">
+    <div class="masthead-text">
+      <div class="eyebrow">Diagnóstico de performance · mídia paga</div>
+      <h1>Point Thermic — Diagnóstico de Growth</h1>
+      <div class="masthead-sub">Consolidado com dado ao vivo via Windsor.ai · atualizado em 25 de setembro de 2026</div>
+    </div>
+    <div class="score-badge">
+      <div class="num">5<span style="font-size:18px;color:var(--ink-muted);">/10</span></div>
+      <div class="lbl">Maturidade de performance de ads, consolidada nos dois canais</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Módulo 00 · contexto do cliente e mercado</div>
+      <h2>Quem é a Point Thermic, e em que mercado ela compete</h2>
+      <p>Base de todo o diagnóstico: identidade da empresa, nicho, panorama de mercado e maturidade digital preliminar, antes de entrar na análise de canais, concorrentes e projeção que seguem abaixo.</p>
+    </div>
+
+    <div class="card ctx-card">
+      <div class="ctx-fact-grid">
+        <div class="ctx-fact">
+          <div class="k">Razão de existir</div>
+          <div class="v">"Líder nacional em Tratamento Térmico e Limpeza Química" — B2B industrial, prestação de serviço técnico especializado por projeto/contrato, sem recorrência tipo assinatura.</div>
+        </div>
+        <div class="ctx-fact">
+          <div class="k">Sede e contato</div>
+          <div class="v">Rua Tarauacá, 127, Cotia – SP. Atuação declarada em todo o território nacional.</div>
+        </div>
+      </div>
+      <div class="ctx-fact">
+        <div class="k">Serviços principais</div>
+        <div class="kw-chips">
+          <span class="kw-chip">Alívio de tensões localizado (pré/pós-aquecimento)</span>
+          <span class="kw-chip">Limpeza química industrial</span>
+          <span class="kw-chip">Descontaminação química</span>
+          <span class="kw-chip">Venda e locação de equipamentos</span>
+        </div>
+      </div>
+      <div class="ctx-fact">
+        <div class="k">Setores atendidos</div>
+        <div class="kw-chips">
+          <span class="kw-chip">Óleo e gás onshore/offshore</span>
+          <span class="kw-chip">Química e petroquímica</span>
+          <span class="kw-chip">Naval</span>
+          <span class="kw-chip">Siderurgia</span>
+          <span class="kw-chip">Mineração</span>
+          <span class="kw-chip">Papel e celulose</span>
+          <span class="kw-chip">Usinas hidrelétricas e termelétricas</span>
+        </div>
+      </div>
+      <div class="ctx-fact">
+        <div class="k">Certificações e prova social</div>
+        <div class="kw-chips">
+          <span class="kw-chip core">NBR ISO 9001:2015</span>
+          <span class="kw-chip core">Cadastro ONIP</span>
+          <span class="kw-chip core">Cliente: Usiminas, MAN, Medquímica, Milplan, TSE +11</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctx-fact-grid">
+      <div class="card">
+        <h3 style="margin-bottom:8px;">Nicho e critério de decisão do comprador</h3>
+        <p style="font-size:13.5px; margin-bottom:10px;">Comprador típico: engenheiro de manutenção, gestor de compras técnicas ou responsável por parada de manutenção programada. Ciclo de venda longo, decisão técnica multi-stakeholder.</p>
+        <div class="cause-list">
+          <div class="opp"><div class="opp-num" style="background:var(--surface-3); color:var(--ink-2);">1</div><p>Certificação técnica (ISO 9001, ONIP) e histórico com clientes de porte reconhecido</p></div>
+          <div class="opp"><div class="opp-num" style="background:var(--surface-3); color:var(--ink-2);">2</div><p>Capacidade de atender prazo de parada programada — janela crítica de produção</p></div>
+          <div class="opp"><div class="opp-num" style="background:var(--surface-3); color:var(--ink-2);">3</div><p>Preço relevante, mas subordinado à confiabilidade técnica dado o risco de falha em ativo crítico</p></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:8px;">Panorama do mercado</h3>
+        <div class="channel-metrics" style="margin-bottom:10px;">
+          <div class="metric"><div class="num">US$ 23,7 bi</div><div class="lbl">Mercado de óleo e gás no Brasil em 2026 (Mordor Intelligence)</div></div>
+          <div class="metric"><div class="num">US$ 28,8 bi</div><div class="lbl">Projeção para 2031</div></div>
+          <div class="metric"><div class="num">US$ 77,3 bi</div><div class="lbl">Capex da Petrobras em E&P, plano 2025–2029 (Deloitte)</div></div>
+          <div class="metric"><div class="num">↑</div><div class="lbl">Terceirização de manutenção industrial em tendência de alta</div></div>
+        </div>
+        <p style="font-size:13px;">Mercado-alvo em expansão de investimento e em tendência estrutural de terceirização — favorável a prestadores de serviço técnico especializado. Maturidade digital do setor ainda baixa, o que abre espaço de vantagem competitiva desproporcional para quem sair na frente.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Maturidade digital preliminar</h3>
+      <div class="maturity-mini">
+        <div class="num">4<span style="font-size:16px; color:var(--ink-muted);">/10</span></div>
+        <div class="maturity-bar"><span style="width:40%;"></span></div>
+        <div class="txt" style="max-width:420px;">Investimento real em mídia paga e mensuração (Google Ads, Meta, GA4, 3 contêineres GTM, Clarity, Hotjar) — acima da média do nicho. Mas SEO técnico, estrutura de conteúdo e captação qualificada têm lacunas estruturais. Nota preliminar, anterior à análise de canais — revisada para 5/10 na seção de ads a seguir.</div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2 style="font-size:17px;">Mapa de dores do negócio</h2>
+    </div>
+    <div class="card cause-list">
+      <div class="cause">
+        <div class="cause-num">01</div>
+        <div class="cause-body">
+          <h3>Geração de demanda dependente de mídia paga, sem base orgânica de suporte</h3>
+          <p>Instrumentação de Google Ads e Meta Ads ativa, mas zero conteúdo de blog e ausência de meta description/dados estruturados. Hipótese apoiada em fato — custo de aquisição provavelmente mais alto do que poderia ser.</p>
+        </div>
+      </div>
+      <div class="cause">
+        <div class="cause-num">02</div>
+        <div class="cause-body">
+          <h3>Captação de lead pouco qualificada</h3>
+          <p>Formulário principal do site pede apenas nome e e-mail, sem telefone, empresa ou mensagem — fraco para qualificar um lead B2B industrial de ticket alto.</p>
+        </div>
+      </div>
+      <div class="cause">
+        <div class="cause-num">03</div>
+        <div class="cause-body">
+          <h3>Risco de ambiguidade semântica no nome da marca</h3>
+          <p>"Thermic" tende a gerar ruído de intenção com público leigo (associação a climatização), diluindo esforço de SEO genérico — reforça a necessidade de SEO por cauda longa técnica.</p>
+        </div>
+      </div>
+      <div class="cause">
+        <div class="cause-num">04</div>
+        <div class="cause-body">
+          <h3>Ausência de ativo de conteúdo técnico</h3>
+          <p>Blog existente e indexável, sem nenhum artigo publicado — fato observado. Oportunidade perdida de captura de busca de cauda longa técnica que engenheiros de manutenção pesquisam antes de contratar.</p>
+        </div>
+      </div>
+      <div class="cause">
+        <div class="cause-num">05</div>
+        <div class="cause-body">
+          <h3>Dependência de reconhecimento prévio da marca para conversão</h3>
+          <p>Comunicação técnica e institucional, sem storytelling de prova social ativa (cases, depoimentos, números de projetos). Pode alongar o ciclo de confiança num mercado B2B de decisão longa.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Módulos 02, 03 e 09 · mídia paga</div>
+      <h2>Diagnóstico de performance de ads, com dado ao vivo</h2>
+      <p>Com o contexto de negócio e mercado estabelecido acima, a análise segue para os canais pagos: o que está funcionando, o que está parado, e por quê.</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat good">
+        <div class="num">R$ 28,22</div>
+        <div class="lbl">CPL do Meta Ads em setembro — 62 leads gerados</div>
+      </div>
+      <div class="stat crit">
+        <div class="num">16 dias</div>
+        <div class="lbl">Sem gasto, impressão ou clique registrado no Google Ads</div>
+      </div>
+      <div class="stat crit">
+        <div class="num">R$ 2.092</div>
+        <div class="lbl">Gastos em Google Ads sem uma única conversão desde 15/07</div>
+      </div>
+      <div class="stat">
+        <div class="num">R$ 68,94</div>
+        <div class="lbl">Melhor CPA já registrado na conta (Google, grupo "Alívio de Tensões")</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Status ao vivo</div>
+      <h2>Os dois canais, hoje</h2>
+      <p>O adendo de correção dos módulos anteriores já registrava os dois canais como "ativos". A consulta em tempo real desta análise mostra uma imagem mais precisa: um canal funcionando, o outro parado.</p>
+    </div>
+    <div class="channels">
+      <div class="channel-card meta">
+        <div class="channel-head">
+          <div class="channel-name"><span class="dot meta"></span><h3>Meta Ads</h3></div>
+          <span class="pill good">Ativo</span>
+        </div>
+        <div class="channel-metrics">
+          <div class="metric"><div class="num">R$ 2.279,67</div><div class="lbl">Investido em setembro</div></div>
+          <div class="metric"><div class="num">62 leads</div><div class="lbl">Campanha de formulário</div></div>
+          <div class="metric"><div class="num">R$ 28,22</div><div class="lbl">Custo por lead</div></div>
+          <div class="metric"><div class="num">25/09</div><div class="lbl">Último dia com gasto</div></div>
+        </div>
+        <p>Gasto todos os dias de setembro, incluindo hoje. CPL estável na faixa de otimização já identificada no diagnóstico anterior — não é mais tendência, é resultado sustentado.</p>
+      </div>
+      <div class="channel-card google">
+        <div class="channel-head">
+          <div class="channel-name"><span class="dot google"></span><h3>Google Ads</h3></div>
+          <span class="pill crit">Parado — 16 dias</span>
+        </div>
+        <div class="channel-metrics">
+          <div class="metric"><div class="num">R$ 511,45</div><div class="lbl">Investido em setembro</div></div>
+          <div class="metric"><div class="num">0</div><div class="lbl">Conversões registradas</div></div>
+          <div class="metric"><div class="num">1.702</div><div class="lbl">Cliques na Performance Max sem 1 conversão</div></div>
+          <div class="metric"><div class="num">09/09</div><div class="lbl">Último dia com gasto</div></div>
+        </div>
+        <p>100% do gasto de setembro ocorreu entre os dias 1 e 9. Desde então, nenhum gasto, impressão ou clique — o canal historicamente mais eficiente da conta está fisicamente silencioso.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Setembro, dia a dia</div>
+      <h2>Gasto diário por canal</h2>
+      <p>O ponto em que os dois canais divergem: o Meta segue uma cadência regular até hoje; o Google interrompe abruptamente no dia 9 e nunca retoma.</p>
+    </div>
+    <div class="card">
+      <div class="chart-wrap" id="spend-chart"></div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--meta);"></span>Meta Ads</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--google);"></span>Google Ads</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Meta ads · campanha de formulário</div>
+      <h2>Leads gerados por dia</h2>
+      <p>62 leads em 23 dias com registro de atividade — média de 2,7 leads/dia, sem interrupção relevante.</p>
+    </div>
+    <div class="card">
+      <div class="chart-wrap" id="leads-chart"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Google Ads · setembro</div>
+      <h2>As quatro campanhas ativas — todas com zero conversão</h2>
+      <p>Mesmo a Performance Max, que testa automaticamente múltiplas combinações de público e criativo, zerou. Isso pesa mais para falha de rastreamento do que para má segmentação.</p>
+    </div>
+    <div class="card table-scroll">
+      <table>
+        <thead>
+          <tr><th>Campanha</th><th>Tipo</th><th class="num">Investido</th><th class="num">Cliques</th><th class="num">Conversões</th></tr>
+        </thead>
+        <tbody>
+          <tr class="row-flag"><td>Search- 04/09</td><td>Search</td><td class="num">R$ 225,84</td><td class="num">26</td><td class="num zero">0</td></tr>
+          <tr class="row-flag"><td>Performance Max- 04/09 L.Q</td><td>Performance Max</td><td class="num">R$ 209,49</td><td class="num">1.702</td><td class="num zero">0</td></tr>
+          <tr class="row-flag"><td>[Search] Tratamento térmico</td><td>Search</td><td class="num">R$ 35,56</td><td class="num">75</td><td class="num zero">0</td></tr>
+          <tr class="row-flag"><td>[Search] Limpeza Química</td><td>Search</td><td class="num">R$ 40,56</td><td class="num">116</td><td class="num zero">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Diagnóstico</div>
+      <h2>Causa-raiz consolidada</h2>
+    </div>
+    <div class="card cause-list">
+      <div class="cause">
+        <div class="cause-num">01</div>
+        <div class="cause-body">
+          <h3>Rastreamento de conversão quebrado no Google Ads</h3>
+          <p>Hipótese mais provável: zero conversão em 4 estruturas de campanha diferentes, incluindo uma automatizada. Formulário da landing page em <code>method="get"</code> sem página de obrigado visível, e três contêineres GTM distintos no site — qualquer um pode estar disparando a tag errada.</p>
+        </div>
+      </div>
+      <div class="cause">
+        <div class="cause-num">02</div>
+        <div class="cause-body">
+          <h3>Mesmo problema, canal diferente, no Meta</h3>
+          <p>Os eventos de pixel customizados (<code>lead_geral</code>, <code>lead_venda</code>, <code>lead_termico</code>) também não registram volume. O Meta "funciona" hoje porque depende de formulário nativo, não do pixel do site — mascarando a mesma falha de instrumentação.</p>
+        </div>
+      </div>
+      <div class="cause">
+        <div class="cause-num">03</div>
+        <div class="cause-body">
+          <h3>Falta de governança de continuidade</h3>
+          <p>A conta de Google Ads já pareceu "parada" duas vezes neste diagnóstico, sem que isso disparasse alerta ou ação — sinal de ausência de monitoramento ativo, não apenas de um bug isolado.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Comparativo</div>
+      <h2>Os dois canais lado a lado</h2>
+    </div>
+    <div class="card table-scroll">
+      <table>
+        <thead>
+          <tr><th>Métrica</th><th>Meta Ads (set, form.)</th><th>Google Ads (histórico eficiente)</th><th>Google Ads (jul–set, atual)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Custo por conversão</td><td class="num">R$ 28,22</td><td class="num">R$ 68,94</td><td class="num zero">sem conversão</td></tr>
+          <tr><td>CTR</td><td class="num">~1,1–1,4%</td><td class="num">12,08%</td><td class="num">5,4–33,8%</td></tr>
+          <tr><td>Volume de conversão</td><td class="num">62 leads/mês</td><td class="num">~9/mês</td><td class="num zero">0</td></tr>
+          <tr><td>Tendência</td><td>Estável, otimizada</td><td>Descontinuada em 16/07</td><td class="num zero">Parada desde 09/09</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Plano de ação</div>
+      <h2>Prioridades, unificadas nos dois canais</h2>
+    </div>
+    <div class="card table-scroll">
+      <table>
+        <thead>
+          <tr><th style="width:26px;">#</th><th>Ação</th><th>Canal</th><th>Prioridade</th><th>Prazo</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">1</td><td>Verificar hoje se a conta Google Ads está ativa (login, meio de pagamento, status real)</td><td>Google</td><td><span class="prio p-crit">Crítica</span></td><td>Imediato</td></tr>
+          <tr><td class="num">2</td><td>Auditar a tag de conversão na thank-you page com um envio de teste real</td><td>Google</td><td><span class="prio p-crit">Crítica</span></td><td>48–72h</td></tr>
+          <tr><td class="num">3</td><td>Pausar o grupo "Recozimento e Normalização" e subir termos negativos</td><td>Google</td><td><span class="prio p-crit">Crítica</span></td><td>Imediato</td></tr>
+          <tr><td class="num">4</td><td>Configurar Custom Audience com os ~118 leads já acumulados do Meta</td><td>Meta</td><td><span class="prio p-crit">Crítica</span></td><td>Imediato</td></tr>
+          <tr><td class="num">5</td><td>Consolidar os três contêineres GTM em um único, documentado</td><td>Ambos</td><td><span class="prio p-high">Alta</span></td><td>1–2 sem.</td></tr>
+          <tr><td class="num">6</td><td>Validar os eventos de pixel customizados do Meta</td><td>Meta</td><td><span class="prio p-high">Alta</span></td><td>1 semana</td></tr>
+          <tr><td class="num">7</td><td>Reativar a estrutura "Alívio de Tensões" assim que o rastreamento validar</td><td>Google</td><td><span class="prio p-high">Alta</span></td><td>Pós #2</td></tr>
+          <tr><td class="num">8</td><td>Inserir Petrobras/ISO 9001 na copy do Meta (já usado no Google)</td><td>Meta</td><td><span class="prio p-med">Média</span></td><td>1 semana</td></tr>
+          <tr><td class="num">9</td><td>Landing pages dedicadas por grupo de anúncio no Google</td><td>Google</td><td><span class="prio p-med">Média</span></td><td>2–4 sem.</td></tr>
+          <tr><td class="num">10</td><td>Checagem semanal de "conta viva" como rotina de governança</td><td>Ambos</td><td><span class="prio p-med">Média</span></td><td>Contínuo</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Estimativa, não fato observado</div>
+      <h2>Impacto financeiro projetado</h2>
+    </div>
+    <div class="proj-row">
+      <div class="proj-tile">
+        <div class="proj-tag">Se o Google for restaurado</div>
+        <div class="num">~17 conversões/mês</div>
+        <div class="lbl">Ao CPA histórico de R$ 68,94 com o orçamento médio de mar–ago (~R$ 1.164/mês) — hoje zero.</div>
+      </div>
+      <div class="proj-tile">
+        <div class="proj-tag">Já perdido</div>
+        <div class="num">~30 conversões</div>
+        <div class="lbl">Equivalente, ao CPA histórico eficiente, dos R$ 2.092,33 gastos sem conversão desde 15/07.</div>
+      </div>
+      <div class="proj-tile">
+        <div class="proj-tag">Realocação tática no Meta</div>
+        <div class="num">+9 a 10 leads/mês</div>
+        <div class="lbl">Se o orçamento hoje em campanhas táticas (evento/máquina, ~23% do gasto) voltasse ao CPL de R$ 28,22.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Módulo 10 · projeção de mercado</div>
+      <h2>O que o mercado entrega, em benchmark</h2>
+      <p>CPL de mídia usado nos dois cenários é dado real da própria conta (R$ 68,94 Google, R$ 28,22 Meta) — não benchmark externo. Toda a variação entre os cenários vem da eficiência do funil comercial (lead → MQL → SQL → oportunidade → venda), pesquisada ao vivo em fontes de mercado brasileiras (RD Station, Landbase, Gartner).</p>
+    </div>
+
+    <div class="funnel-grid">
+      <div class="funnel-card min">
+        <div class="funnel-top">
+          <div>
+            <span class="pill warn">Mínimo viável</span>
+          </div>
+          <div class="funnel-invest">R$ 10.900<span class="unit">investimento/mês</span></div>
+        </div>
+        <div class="funnel-rows">
+          <div class="funnel-row"><div class="stage">Leads</div><div class="funnel-track"><div class="funnel-bar" style="width:100%;"></div></div><div class="val">204</div></div>
+          <div class="funnel-row"><div class="stage">MQL</div><div class="funnel-track"><div class="funnel-bar" style="width:20%;"></div></div><div class="val">41</div></div>
+          <div class="funnel-row"><div class="stage">SQL</div><div class="funnel-track"><div class="funnel-bar" style="width:7%;"></div></div><div class="val">14</div></div>
+          <div class="funnel-row"><div class="stage">Oport.</div><div class="funnel-track"><div class="funnel-bar" style="width:3%;"></div></div><div class="val">7</div></div>
+          <div class="funnel-row"><div class="stage">Vendas</div><div class="funnel-track"><div class="funnel-bar" style="width:1%;"></div></div><div class="val">2</div></div>
+        </div>
+        <div class="funnel-result">
+          <div class="metric"><div class="num">R$ 20 mil</div><div class="lbl">Receita projetada/mês</div></div>
+          <div class="metric"><div class="num">~1,8x</div><div class="lbl">ROAS estimado</div></div>
+        </div>
+      </div>
+
+      <div class="funnel-card max">
+        <div class="funnel-top">
+          <div>
+            <span class="pill good">Potencial de mercado</span>
+          </div>
+          <div class="funnel-invest">R$ 61.100<span class="unit">investimento/mês</span></div>
+        </div>
+        <div class="funnel-rows">
+          <div class="funnel-row"><div class="stage">Leads</div><div class="funnel-track"><div class="funnel-bar" style="width:100%;"></div></div><div class="val">1.143</div></div>
+          <div class="funnel-row"><div class="stage">MQL</div><div class="funnel-track"><div class="funnel-bar" style="width:40%;"></div></div><div class="val">457</div></div>
+          <div class="funnel-row"><div class="stage">SQL</div><div class="funnel-track"><div class="funnel-bar" style="width:20%;"></div></div><div class="val">229</div></div>
+          <div class="funnel-row"><div class="stage">Oport.</div><div class="funnel-track"><div class="funnel-bar" style="width:14%;"></div></div><div class="val">160</div></div>
+          <div class="funnel-row"><div class="stage">Vendas</div><div class="funnel-track"><div class="funnel-bar" style="width:5%;"></div></div><div class="val">56</div></div>
+        </div>
+        <div class="funnel-result">
+          <div class="metric"><div class="num">R$ 560 mil</div><div class="lbl">Receita projetada/mês</div></div>
+          <div class="metric"><div class="num">~9,2x</div><div class="lbl">ROAS estimado</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="eyebrow">Validação de capacidade</div>
+      <p>56 vendas/mês equivalem a mais de duas novas contratações por dia útil. Não há evidência de estrutura comercial e operacional para esse volume — leia o Cenário 2 como o teto que o mercado permite, não como meta imediata. Com ciclo de venda B2B industrial de 3 a 18 meses, a receita projetada representa regime estacionário de uma operação madura, não o resultado do primeiro mês de investimento.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:10px;">A alavanca não é mídia, é o funil comercial</h3>
+      <p style="font-size:13.5px;">O CPL é idêntico nos dois cenários (dado real da própria conta). A diferença de R$ 540 mil/mês entre os cenários vem inteiramente de formalizar o processo comercial: um SLA de tempo de resposta entre lead e primeiro contato já move a taxa MQL→SQL de 35% para 50% (RD Station, benchmark Brasil), e um discovery estruturado move SQL→Oportunidade de 50% para 70%. Nenhum ganho aqui depende de aumentar o orçamento de anúncio.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Sugestões de palavras-chave · Google Ads</div>
+      <h2>Onde investir a próxima palavra-chave</h2>
+      <p>Cruza os termos de pesquisa reais que já geram clique e conversão na conta (módulo 03) com oportunidades de cauda longa do portfólio de serviço ainda não capturadas. Sem acesso ao Google Keyword Planner nesta sessão (exige login do cliente) — volume de busca das sugestões de cauda longa é hipótese a validar, não dado confirmado.</p>
+    </div>
+
+    <div class="card kw-card">
+      <div class="kw-head"><h3>Núcleo — já validado por conversão real</h3><span class="pill good">Fato observado</span></div>
+      <div class="kw-chips">
+        <span class="kw-chip core">alívio de tensão pós-soldagem</span>
+        <span class="kw-chip core">alívio de tensão em metais</span>
+        <span class="kw-chip core">tratamento térmico localizado</span>
+        <span class="kw-chip core">tratamento térmico industrial</span>
+        <span class="kw-chip core">limpeza química industrial</span>
+        <span class="kw-chip core">passivação de inox</span>
+        <span class="kw-chip core">flush tubulações</span>
+        <span class="kw-chip core">empresas de soldagem industrial</span>
+        <span class="kw-chip core">metalúrgica</span>
+      </div>
+      <div class="kw-note">Cluster com melhor custo por conversão da conta (R$ 68,94). Prioridade: aumentar lance e orçamento aqui antes de qualquer palavra nova — a parcela de impressões capturada hoje é de apenas 11%.</div>
+    </div>
+
+    <div class="card kw-card">
+      <div class="kw-head"><h3>Cauda longa — oportunidade a testar</h3><span class="pill warn">Hipótese, validar volume</span></div>
+      <div class="kw-chips">
+        <span class="kw-chip opp">flushing hidráulico industrial</span>
+        <span class="kw-chip opp">teste hidrostático empresa</span>
+        <span class="kw-chip opp">teste pneumático industrial</span>
+        <span class="kw-chip opp">passagem de pig em tubulação</span>
+        <span class="kw-chip opp">pré-aquecimento para soldagem</span>
+        <span class="kw-chip opp">pós-aquecimento de solda PWHT</span>
+        <span class="kw-chip opp">descontaminação química industrial</span>
+        <span class="kw-chip opp">remoção de borra de petróleo</span>
+        <span class="kw-chip opp">eliminação de H2S industrial</span>
+        <span class="kw-chip opp">laudo técnico tratamento térmico ISO 9001</span>
+        <span class="kw-chip opp">fornecedor cadastrado Petrobras tratamento térmico</span>
+      </div>
+      <div class="kw-note">Termos do portfólio de serviço declarado (módulo 00) que não aparecem nos termos de pesquisa reais coletados — possível lacuna de cobertura. As duas últimas exploram o ativo de credibilidade que nenhum concorrente usa com o mesmo destaque.</div>
+    </div>
+
+    <div class="card kw-card">
+      <div class="kw-head"><h3>Captura de concorrente</h3><span class="pill" style="background:var(--meta-tint); color:var(--meta);">Oportunidade, volume não dimensionado</span></div>
+      <div class="kw-chips">
+        <span class="kw-chip rival">hotwork brasil engenharia térmica</span>
+        <span class="kw-chip rival">grefortec tratamento térmico</span>
+        <span class="kw-chip rival">mxt tratamento termico</span>
+        <span class="kw-chip rival">filtrovali limpeza química</span>
+        <span class="kw-chip rival">itp brasil limpeza de dutos</span>
+      </div>
+      <div class="kw-note">Buscas de marca de concorrentes já aparecem incidentalmente nos termos de pesquisa reais. Nenhuma campanha deliberada de captura de concorrente existe hoje — volume observado é pequeno demais nesta amostra para dimensionar prioridade.</div>
+    </div>
+
+    <div class="card kw-card">
+      <div class="kw-head"><h3>Negativas a adicionar imediatamente</h3><span class="pill crit">Crítica, ruído confirmado</span></div>
+      <div class="kw-chips">
+        <span class="kw-chip neg">têmpera</span>
+        <span class="kw-chip neg">revenimento</span>
+        <span class="kw-chip neg">recozimento</span>
+        <span class="kw-chip neg">normalização</span>
+        <span class="kw-chip neg">tratamento térmico de metais</span>
+        <span class="kw-chip neg">piso encardido</span>
+        <span class="kw-chip neg">tratamento de água</span>
+        <span class="kw-chip neg">desengraxante doméstico</span>
+      </div>
+      <div class="kw-note">Termos reais que já geraram clique e gasto sem relação com o serviço da Point Thermic (segmento de tratamento térmico metalúrgico em forno, não alívio de tensões pós-solda). Sem custo de mídia adicional para corrigir — apenas configuração.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Módulo 01 · inteligência competitiva</div>
+      <h2>Quem disputa a mesma demanda</h2>
+      <p>Três concorrentes validados por sobreposição real de portfólio: Filtrovali, Hydratight (operação Brasil) e ITP Brasil. Nenhum exibe certificação (ISO/ONIP) com o mesmo destaque que a Point Thermic — mas isso ainda não virou vantagem de conversão ou SEO.</p>
+    </div>
+
+    <div class="callout">
+      <div class="eyebrow">Conexão direta com o diagnóstico de ads</div>
+      <p><strong>A Filtrovali é a única concorrente com mídia paga ativa e simultânea nos dois canais</strong> — 46 anúncios no Google Ads Transparency Center e 3 no Meta Ad Library, rodando enquanto o Google Ads da Point Thermic está parado há 16 dias. É quem mais disputa, agora, a mesma demanda que os R$ 17.857 investidos em mídia paga nos últimos 7 meses tentam capturar.</p>
+    </div>
+
+    <div class="comp-grid">
+      <div class="comp-card" style="border-top-color:var(--google);">
+        <div class="comp-head">
+          <h3>Filtrovali</h3>
+          <span class="prio p-crit">Concorrência muito alta</span>
+        </div>
+        <div class="comp-sub">Portfólio quase idêntico (decapagem, flushing, teste hidrostático, limpeza química) e mídia paga ativa nos dois canais</div>
+        <div class="channel-metrics">
+          <div class="metric"><div class="num">46</div><div class="lbl">Anúncios no Google Ads Transparency Center</div></div>
+          <div class="metric"><div class="num">3</div><div class="lbl">Anúncios ativos no Meta Ad Library</div></div>
+        </div>
+        <div class="comp-fact"><div class="k">Diferencial</div><div class="v">Copy consultivo anti-commoditização, CTA direto para WhatsApp, SEO tecnicamente mais maduro do grupo (meta description única, JSON-LD, canonical)</div></div>
+        <div class="comp-fact"><div class="k">Ponto fraco</div><div class="v">Nenhuma certificação (ISO/ONIP) exposta na home</div></div>
+      </div>
+
+      <div class="comp-card" style="border-top-color:var(--warning);">
+        <div class="comp-head">
+          <h3>Hydratight (BR)</h3>
+          <span class="prio p-high">Concorrência alta</span>
+        </div>
+        <div class="comp-sub">Portfólio adjacente muito mais amplo (torqueamento, engenharia de campo) — risco de "roubar o orçamento total" da parada de manutenção</div>
+        <div class="channel-metrics">
+          <div class="metric"><div class="num">35 sedes</div><div class="lbl">Rede internacional declarada</div></div>
+          <div class="metric"><div class="num">0</div><div class="lbl">Anúncios ativos detectados (Google/Meta)</div></div>
+        </div>
+        <div class="comp-fact"><div class="k">Diferencial</div><div class="v">Fornecedor único de parada de manutenção; maior volume de páginas de SEO de cauda longa do grupo</div></div>
+        <div class="comp-fact"><div class="k">Ponto fraco</div><div class="v">Copy genérica e clichê, sem dado estruturado, sem mídia paga ativa no Brasil</div></div>
+      </div>
+
+      <div class="comp-card">
+        <div class="comp-head">
+          <h3>ITP Brasil</h3>
+          <span class="prio p-med">Concorrência média</span>
+        </div>
+        <div class="comp-sub">Núcleo mais estreito (limpeza e comissionamento de dutos), mesmo cadastro Petrobras/ONIP, mas sem investimento digital ativo</div>
+        <div class="channel-metrics">
+          <div class="metric"><div class="num">40+ anos</div><div class="lbl">Operação internacional (matriz espanhola)</div></div>
+          <div class="metric"><div class="num">0</div><div class="lbl">Anúncios ativos detectados (Google/Meta)</div></div>
+        </div>
+        <div class="comp-fact"><div class="k">Diferencial</div><div class="v">Herança e porte internacional, certificações ISO 9001/14001</div></div>
+        <div class="comp-fact"><div class="k">Ponto fraco</div><div class="v">Site datado, meta description idêntica copiada em todas as páginas, presença digital a mais fraca do grupo</div></div>
+      </div>
+    </div>
+
+    <div class="card table-scroll">
+      <table>
+        <thead>
+          <tr><th>Critério</th><th>Point Thermic</th><th>Filtrovali</th><th>Hydratight (BR)</th><th>ITP Brasil</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Certificação em destaque</td><td><strong>ISO 9001 + ONIP na home</strong></td><td>Não exposta</td><td>Não exposta</td><td>Citada em texto, sem destaque</td></tr>
+          <tr><td>Mídia paga ativa</td><td>Meta + Google (Google parado)</td><td>Meta + Google, simultâneos</td><td>Não detectada</td><td>Não detectada</td></tr>
+          <tr><td>SEO técnico</td><td class="zero">Zero meta description, H1 duplicado</td><td>Meta description única, JSON-LD</td><td>Meta description genérica</td><td>Meta description duplicada</td></tr>
+          <tr><td>Conteúdo orgânico</td><td>Blog publicado e vazio</td><td>Não auditável</td><td>Páginas de cauda longa</td><td>Não auditável</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-head">
+      <h2 style="font-size:17px;">Oportunidades de diferenciação</h2>
+    </div>
+    <div class="card opp-list">
+      <div class="opp"><div class="opp-num">1</div><p>Usar a certificação (ISO 9001 + ONIP) como ativo central de copy em anúncios e SEO — nenhum concorrente faz isso com o mesmo destaque.</p></div>
+      <div class="opp"><div class="opp-num">2</div><p>Corrigir a base técnica de SEO (meta description única, dados estruturados, H1 correto) já supera o padrão dos quatro sites analisados, inclusive o da Filtrovali.</p></div>
+      <div class="opp"><div class="opp-num">3</div><p>Ativar o blog já existente (hoje vazio) com conteúdo técnico de cauda longa — nenhum concorrente tem estratégia de conteúdo robusta comparável.</p></div>
+      <div class="opp"><div class="opp-num">4</div><p>Testar CTA de anúncio direto para WhatsApp, padrão já validado pela Filtrovali, reduzindo fricção num público que decide por relacionamento técnico.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>Fonte e método (contexto e mercado):</strong> leitura direta do site oficial via navegador headless em 25/09/2026, complementada por pesquisa pública sobre o mercado de óleo e gás e manutenção industrial no Brasil (Mordor Intelligence, Deloitte Brasil, Química.com.br, Pollo Engenharia).</p>
+    <p><strong>Fonte e método (ads):</strong> consulta direta ao Windsor.ai (API Meta Ads e Google Ads) em 25/09/2026, período 01–25/09/2026, granularidade diária. Cruzado com os módulos 02 (Meta) e 03 (Google) do diagnóstico digital completo e com os CSVs em <code>dados/</code>. A distinção entre "conta pausada" e "atraso de sincronização do conector" para o Google Ads não pôde ser resolvida apenas com dado de API — recomenda-se verificação direta no painel como primeiro passo.</p>
+    <p><strong>Fonte e método (concorrentes):</strong> sites oficiais navegados via Chromium headless em 25/09/2026; Meta Ad Library e Google Ads Transparency Center consultados diretamente por domínio/nome para os três concorrentes. Instagram e LinkedIn não puderam ser auditados diretamente (bloqueio de acesso não autenticado) — limitação registrada.</p>
+    <p><strong>Fonte e método (projeção de mercado e keywords):</strong> metodologia Doutor Carvalho (V4 Company), benchmark ao vivo via WebSearch (WordStream, RD Station Panorama de Vendas, Landbase, Gartner) cruzado com CPL real da própria conta. Sugestões de cauda longa não têm volume validado no Google Keyword Planner (exige login do cliente, fora do escopo desta sessão).</p>
+    <p>Repositório completo: <a href="https://github.com/oivanfelipe/analise_point" target="_blank" rel="noopener">github.com/oivanfelipe/analise_point</a> — ver <code>notas/01-concorrentes.md</code>, <code>notas/09-diagnostico-performance-ads.md</code> e <code>notas/10-projecao-mercado.md</code></p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  function css(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  var days = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
+  var metaSpend  = [75.71,62.45,45.6,55.04,62.93,65.46,0,0,86.43,146.59,143.83,146.33,112.85,138.06,118.67,101.30,89.06,71.50,75.00,79.26,123.47,133.10,149.81,126.08,81.06];
+  var googleSpend= [26.81,25.86,23.46,35.39,0.71,74.50,30.81,139.47,154.44,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  var leads = [6,1,1,5,1,1,0,0,3,4,2,2,3,1,4,3,2,2,1,2,4,4,3,4,3];
+
+  function buildLineChart(el, series, opts){
+    var W = el.clientWidth || 600, H = opts.h || 220;
+    var padL = 34, padR = 14, padT = 16, padB = 26;
+    var maxY = opts.maxY;
+    var n = opts.x.length;
+    var x = function(i){ return padL + (W - padL - padR) * (i/(n-1)); };
+    var y = function(v){ return padT + (H - padT - padB) * (1 - v/maxY); };
+
+    var svgNS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS,"svg");
+    svg.setAttribute("viewBox","0 0 "+W+" "+H);
+    svg.setAttribute("width","100%");
+    svg.setAttribute("height",H);
+    svg.style.display="block";
+    svg.style.overflow="visible";
+
+    // gridlines + y labels
+    var steps = 4;
+    for(var s=0;s<=steps;s++){
+      var v = maxY*s/steps;
+      var gy = y(v);
+      var line = document.createElementNS(svgNS,"line");
+      line.setAttribute("x1",padL); line.setAttribute("x2",W-padR);
+      line.setAttribute("y1",gy); line.setAttribute("y2",gy);
+      line.setAttribute("class","gridline");
+      svg.appendChild(line);
+      var lbl = document.createElementNS(svgNS,"text");
+      lbl.setAttribute("x",4); lbl.setAttribute("y",gy+3);
+      lbl.setAttribute("class","axis-label");
+      lbl.textContent = "R$"+Math.round(v);
+      svg.appendChild(lbl);
+    }
+    // x labels (every 5 days)
+    for(var i=0;i<n;i++){
+      if(i%5===0 || i===n-1){
+        var xl = document.createElementNS(svgNS,"text");
+        xl.setAttribute("x",x(i)); xl.setAttribute("y",H-8);
+        xl.setAttribute("class","axis-label"); xl.setAttribute("text-anchor","middle");
+        xl.textContent = opts.x[i];
+        svg.appendChild(xl);
+      }
+    }
+
+    // annotation
+    if(opts.annotateIndex!=null){
+      var ax = x(opts.annotateIndex);
+      var aline = document.createElementNS(svgNS,"line");
+      aline.setAttribute("x1",ax); aline.setAttribute("x2",ax);
+      aline.setAttribute("y1",padT); aline.setAttribute("y2",H-padB);
+      aline.setAttribute("stroke",css('--google')); aline.setAttribute("stroke-width","1.5");
+      aline.setAttribute("stroke-dasharray","3,3"); aline.setAttribute("opacity","0.7");
+      svg.appendChild(aline);
+      var atext = document.createElementNS(svgNS,"text");
+      atext.setAttribute("x",ax+6); atext.setAttribute("y",padT+10);
+      atext.setAttribute("fill",css('--google')); atext.setAttribute("font-size","10");
+      atext.setAttribute("font-family","IBM Plex Mono, monospace");
+      atext.textContent = opts.annotateLabel;
+      svg.appendChild(atext);
+    }
+
+    var dots = [];
+    series.forEach(function(ser){
+      var pathD = "";
+      ser.data.forEach(function(v,i){
+        pathD += (i===0?"M":"L") + x(i) + " " + y(v) + " ";
+      });
+      var path = document.createElementNS(svgNS,"path");
+      path.setAttribute("d",pathD);
+      path.setAttribute("fill","none");
+      path.setAttribute("stroke",ser.color);
+      path.setAttribute("stroke-width","2.5");
+      path.setAttribute("stroke-linejoin","round");
+      path.setAttribute("stroke-linecap","round");
+      svg.appendChild(path);
+
+      // end label
+      var lastI = ser.data.length-1;
+      var endDot = document.createElementNS(svgNS,"circle");
+      endDot.setAttribute("cx",x(lastI)); endDot.setAttribute("cy",y(ser.data[lastI]));
+      endDot.setAttribute("r","4"); endDot.setAttribute("fill",ser.color);
+      endDot.setAttribute("stroke",css('--surface')); endDot.setAttribute("stroke-width","2");
+      svg.appendChild(endDot);
+
+      ser.data.forEach(function(v,i){
+        dots.push({x:x(i), y:y(v), i:i, v:v, color:ser.color, name:ser.name});
+      });
+    });
+
+    var hoverLine = document.createElementNS(svgNS,"line");
+    hoverLine.setAttribute("y1",padT); hoverLine.setAttribute("y2",H-padB);
+    hoverLine.setAttribute("stroke",css('--ink-muted')); hoverLine.setAttribute("stroke-width","1");
+    hoverLine.setAttribute("opacity","0");
+    svg.appendChild(hoverLine);
+
+    el.style.position="relative";
+    el.appendChild(svg);
+
+    var tooltip = document.createElement("div");
+    tooltip.className="tooltip";
+    el.appendChild(tooltip);
+
+    var overlay = document.createElementNS(svgNS,"rect");
+    overlay.setAttribute("x",padL); overlay.setAttribute("y",padT);
+    overlay.setAttribute("width",W-padL-padR); overlay.setAttribute("height",H-padT-padB);
+    overlay.setAttribute("fill","transparent");
+    svg.appendChild(overlay);
+
+    overlay.addEventListener("mousemove", function(e){
+      var rect = svg.getBoundingClientRect();
+      var scale = W / rect.width;
+      var mx = (e.clientX - rect.left) * scale;
+      var idx = Math.round((mx - padL) / (W-padL-padR) * (n-1));
+      idx = Math.max(0, Math.min(n-1, idx));
+      hoverLine.setAttribute("x1",x(idx)); hoverLine.setAttribute("x2",x(idx));
+      hoverLine.setAttribute("opacity","1");
+      var lines = ["Set/"+opts.x[idx]];
+      series.forEach(function(ser){
+        lines.push(ser.name+": R$ "+ser.data[idx].toFixed(2).replace('.',','));
+      });
+      tooltip.innerHTML = lines.join("<br>");
+      tooltip.style.opacity = "1";
+      var tx = (x(idx)/W)*rect.width;
+      tooltip.style.left = Math.min(tx+12, rect.width-150)+"px";
+      tooltip.style.top = "6px";
+    });
+    overlay.addEventListener("mouseleave", function(){
+      hoverLine.setAttribute("opacity","0");
+      tooltip.style.opacity="0";
+    });
+  }
+
+  function buildBarChart(el, data, labels, color, opts){
+    var W = el.clientWidth || 600, H = 180;
+    var padL = 30, padR = 10, padT = 12, padB = 24;
+    var maxY = Math.max.apply(null,data)*1.15;
+    var n = data.length;
+    var bw = (W-padL-padR)/n * 0.62;
+    var gap = (W-padL-padR)/n;
+    var y = function(v){ return padT + (H-padT-padB) * (1 - v/maxY); };
+
+    var svgNS="http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS,"svg");
+    svg.setAttribute("viewBox","0 0 "+W+" "+H);
+    svg.setAttribute("width","100%"); svg.setAttribute("height",H);
+    svg.style.display="block"; svg.style.overflow="visible";
+
+    var base = padT + (H-padT-padB);
+    var baseline = document.createElementNS(svgNS,"line");
+    baseline.setAttribute("x1",padL); baseline.setAttribute("x2",W-padR);
+    baseline.setAttribute("y1",base); baseline.setAttribute("y2",base);
+    baseline.setAttribute("class","gridline");
+    svg.appendChild(baseline);
+
+    el.style.position="relative";
+    var tooltip = document.createElement("div");
+    tooltip.className="tooltip";
+
+    data.forEach(function(v,i){
+      var bx = padL + gap*i + (gap-bw)/2;
+      var by = y(v);
+      var rect = document.createElementNS(svgNS,"rect");
+      rect.setAttribute("x",bx); rect.setAttribute("y",by);
+      rect.setAttribute("width",bw); rect.setAttribute("height",Math.max(base-by,0));
+      rect.setAttribute("rx","3");
+      rect.setAttribute("fill",color);
+      rect.setAttribute("opacity", v>0 ? "0.9" : "0.25");
+      svg.appendChild(rect);
+
+      var hit = document.createElementNS(svgNS,"rect");
+      hit.setAttribute("x",padL+gap*i); hit.setAttribute("y",padT);
+      hit.setAttribute("width",gap); hit.setAttribute("height",H-padT-padB);
+      hit.setAttribute("fill","transparent");
+      hit.addEventListener("mousemove", function(e){
+        var r = svg.getBoundingClientRect();
+        tooltip.innerHTML = "Set/"+labels[i]+": <strong>"+v+" lead"+(v===1?"":"s")+"</strong>";
+        tooltip.style.opacity="1";
+        var scale = r.width / W;
+        var tx = (bx+bw/2)*scale;
+        tooltip.style.left = Math.min(Math.max(tx-40,0), r.width-120)+"px";
+        tooltip.style.top = "4px";
+      });
+      hit.addEventListener("mouseleave", function(){ tooltip.style.opacity="0"; });
+      svg.appendChild(hit);
+
+      if(i%5===0 || i===n-1){
+        var xl = document.createElementNS(svgNS,"text");
+        xl.setAttribute("x",bx+bw/2); xl.setAttribute("y",H-8);
+        xl.setAttribute("class","axis-label"); xl.setAttribute("text-anchor","middle");
+        xl.textContent = labels[i];
+        svg.appendChild(xl);
+      }
+    });
+
+    el.appendChild(svg);
+    el.appendChild(tooltip);
+  }
+
+  function render(){
+    document.getElementById('spend-chart').innerHTML = "";
+    document.getElementById('leads-chart').innerHTML = "";
+    buildLineChart(document.getElementById('spend-chart'), [
+      {name:"Meta", data:metaSpend, color:css('--meta')},
+      {name:"Google", data:googleSpend, color:css('--google')}
+    ], {x:days, maxY:160, h:230, annotateIndex:8, annotateLabel:"Google para no dia 9"});
+    buildBarChart(document.getElementById('leads-chart'), leads, days, css('--meta'));
+  }
+
+  render();
+  var raf;
+  window.addEventListener('resize', function(){
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(render);
+  });
+})();
+</script>
