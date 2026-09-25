@@ -1,0 +1,11 @@
+periodo,campanha,tipo,spend,impressions,clicks,ctr,cpc_medio,conversoes,custo_por_conversao,parcela_impressoes
+mar-ago,Search I CPC I Auto I Tratamento Termico,SEARCH,3745.86,22171,2679,0.1208,1.3982,54.33,68.94,0.1114
+mar-ago,[Performance] Limpeza Quimica Industrial,SEARCH,719.04,4237,677,0.1598,1.0621,5,143.81,0.3479
+mar-ago,Search I CPC I Auto I Branding,SEARCH,470.77,3390,340,0.1003,1.3846,1.67,282.47,1.0061
+mar-ago,P.Max I Auto I Point Thermic,PERFORMANCE_MAX,464.04,41737,1575,0.0377,0.2946,2,232.02,0.1268
+mar-ago,[Search] Tratamento termico,SEARCH,833.41,4167,514,0.1234,1.6214,0,,0.2104
+mar-ago,[Search] Limpeza Quimica,SEARCH,747.47,5564,582,0.1046,1.2843,0,,0.4219
+set(1-25),[Search] Tratamento termico,SEARCH,35.56,287,75,,,0,,
+set(1-25),[Search] Limpeza Quimica,SEARCH,40.56,1056,116,,,0,,
+set(1-25),Performance Max- 04/09 L.Q,PERFORMANCE_MAX,209.49,25852,1702,,,0,,
+set(1-25),Search- 04/09,SEARCH,225.84,464,26,,,0,,
