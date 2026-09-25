@@ -2,10 +2,15 @@
 
 Auditoria de aquisição digital da Point Thermic (pointthermic.com.br): contexto de mercado, concorrência, SEO, CRO do site e da landing page de Google Ads, Meta Ads e Google Ads — com dado real de performance das contas de mídia via Windsor.ai.
 
-**Laudo publicado (artefato interativo, com gráficos e capturas reais):**
+**Laudo original publicado (artefato interativo, com gráficos e capturas reais):**
 https://claude.ai/artifact/LDuGb9RV4Z6nGLPtxCxBvY
 
 O HTML fonte desse laudo está em [`laudo/index.html`](laudo/index.html) e pode ser aberto direto no navegador.
+
+**Diagnóstico de Growth (atualização com dado ao vivo, projeção de mercado e keywords):**
+https://claude.ai/artifact/1A8FWhT98uZDBiSX5gqCca
+
+Cobre contexto e mercado, performance de ads (Meta + Google, com dado ao vivo via Windsor.ai), concorrentes, projeção de mercado (funil benchmark) e sugestões de palavras-chave para o Google Ads. O HTML fonte está em [`index.html`](index.html), na raiz do repositório.
 
 ## Estrutura do repositório
 
